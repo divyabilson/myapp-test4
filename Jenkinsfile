@@ -76,7 +76,7 @@ pipeline {
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        TASK_DEFINITION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION}"
-	 	jq -r --arg image "${imageName}" '.taskDefinition.containerDefinitions[0].image = $image' <<< $TASK_DEFINITION > task-definition.json
+	 	jq -r --arg image ""${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)'
 	        '''
          }
 	}
