@@ -95,7 +95,7 @@ pipeline {
 			script {
 				sh """
     				echo "Validating the Deployment status"
-				sleep 250
+				sleep 150
                 		export AWS_PROFILE=iamuser && aws ecs wait services-stable --cluster "${CLUSTERNAME}" --service "${SERVICENAME}" --region $REGION
                 		"""
 			}
