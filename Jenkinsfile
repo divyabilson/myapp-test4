@@ -90,6 +90,17 @@ pipeline {
 		'''
 	    }
 	}
+	stage('Deployment Status') {
+		steps {
+			script {
+				sh """
+    				echo "Validating the Deployment status"
+				sleep 1500
+                		aws ecs wait services-stable --cluster "${CLUSTERNAME}" --service "${SERVICENAME}" --region $REGION
+                		"""
+			}
+		}
+	}
     }
     post {
         always {
