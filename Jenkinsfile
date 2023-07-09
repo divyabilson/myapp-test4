@@ -76,14 +76,7 @@ pipeline {
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} 
-	        aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)') >> new_task          
-	        aws ecs register-task-definition --region ${REGION} --cli-input-json new_task
-                NEW_REVISION=aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} | jq '.taskDefinition.revision')
-                echo "Updating the service with new TD"
-                aws ecs update-service --cluster ${CLUSTERNAME} --service ${SERVICENAME} --task-definition ${TASKFAMILY}:\$NEW_REVISION --region ${REGION}
-	        echo "Cleaning the Images"
-                docker rmi -f $NEW_DOCKER_IMAGE
-                docker rmi -f "${APPS}/${GIT_BRANCH}:${BUILD_NUMBER}"               	    	    
+	               	    	    
                 '''
          }
 	}
