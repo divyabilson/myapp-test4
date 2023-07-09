@@ -49,7 +49,7 @@ pipeline {
                 sh 'git clone $GITHUB_URL'
                 sh 'docker system prune -af'
                 sh 'docker build -t $imageName .'
-              
+                sh 'sudo apt install -y jq && jq --version' 
                 }
             
         }
