@@ -76,9 +76,9 @@ pipeline {
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        TASK_DEFINITION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION}"
-	        NEW_TASK_DEFINITION=$"echo $TASK_DEFINITION | jq --arg IMAGE "696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:${BUILD_NUMBER}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)'"
+	        NEW_TASK_DEFINITION=$"$TASK_DEFINITION | jq --arg IMAGE "696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:${BUILD_NUMBER}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)'"
 		NEW_REVISION=$"aws ecs register-task-definition --region "$REGION" --cli-input-json "$NEW_TASK_DEFINITION""
-  		NEW_REVISION_DATA=$"echo $NEW_REVISION | jq '.taskDefinition.revision'"
+  		NEW_REVISION_DATA=$"$NEW_REVISION | jq '.taskDefinition.revision'"
     		NEW_SERVICE=$"aws ecs update-service --cluster $CLUSTERNAME --service $SERVICENAME --task-definition $TASKFAMILY --force-new-deployment"	
       		echo "done"
 		echo "${TASKFAMILY}, Revision: ${NEW_REVISION_DATA}"
