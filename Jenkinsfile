@@ -72,17 +72,17 @@ pipeline {
                 script {
 		sh '$NEW_DOCKER_IMAGE'
                 sh """
-                set -e
-	            echo "Creating new TD with the new Image"
+                
+	        echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
-	            OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
+	        OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
 	     	$OLD_TASK_DEFINITION
-	            NEW_TASK_DEFINTIION=\$(echo \$OLD_TASK_DEFINITION | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')           
-	            NEW_TASK_INFO=\$(aws ecs register-task-definition --region ${REGION} --cli-input-json "\$NEW_TASK_DEFINTIION")
+	        NEW_TASK_DEFINTIION=\$(echo \$OLD_TASK_DEFINITION | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')           
+	        NEW_TASK_INFO=\$(aws ecs register-task-definition --region ${REGION} --cli-input-json "\$NEW_TASK_DEFINTIION")
                 NEW_REVISION=\$(echo \$NEW_TASK_INFO | jq '.taskDefinition.revision')
                 echo "Updating the service with new TD"
                 aws ecs update-service --cluster ${env.CLUSTERNAME} --service ${env.SERVICENAME} --task-definition ${env.TASKFAMILY}:\$NEW_REVISION --region ${REGION}
-	            echo "Cleaning the Images"
+	        echo "Cleaning the Images"
                 docker rmi -f $NEW_DOCKER_IMAGE
                 docker rmi -f "${APPS}/${GIT_BRANCH}:${BUILD_NUMBER}"               	    	    
                 """
