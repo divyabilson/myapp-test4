@@ -73,13 +73,10 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
 		sh '''
-  		NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
-    		$NEW_DOCKER_IMAGE
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        TASK_DEFINITION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION}"
-	        echo $TASK_DEFINITION | jq ‘.containerDefinitions[0].image =’ ”696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:10”  > task-def.json
-	 	aws ecs register-task-definition --family myapp-test4 --region=us-east-1 --cli-input-json file://task-def.json
+	        NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:${BUILD_NUMBER}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
 		'''
          }
 	}
