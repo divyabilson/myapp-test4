@@ -13,9 +13,10 @@ pipeline {
         USERNAME = "ubuntu"
         AWS_KEY_ID = "web_server_1"
       
-      REGION = 'us-east-1'
-      REPOSITORY = 'myapp-nodejs1'
-      ECR_REGISTRY = '696083720229.dkr.ecr.us-east-1.amazonaws.com'
+      REGION = "us-east-1"
+      REPOSITORY = "myapp-nodejs1"
+      ECR_REGISTRY = "696083720229.dkr.ecr.us-east-1.amazonaws.com"
+      NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
       
       
         
@@ -69,12 +70,13 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
                 script {
-                def NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"        
+		sh '$NEW_DOCKER_IMAGE'
                 sh """
                 set -e
 	            echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	            OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
+	     	$OLD_TASK_DEFINITION
 	            NEW_TASK_DEFINTIION=\$(echo \$OLD_TASK_DEFINITION | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')           
 	            NEW_TASK_INFO=\$(aws ecs register-task-definition --region ${REGION} --cli-input-json "\$NEW_TASK_DEFINTIION")
                 NEW_REVISION=\$(echo \$NEW_TASK_INFO | jq '.taskDefinition.revision')
