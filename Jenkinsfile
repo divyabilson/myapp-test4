@@ -76,7 +76,7 @@ pipeline {
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        TASK_DEFINITION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION}"
-	        echo $TASK_DEFINITION | jq ‘.containerDefinitions[0].image =’ \”${ NEW_DOCKER_IMAGE }\” \ > task-def.json
+	        echo $TASK_DEFINITION | jq ‘.containerDefinitions[0].image =’ ”${ NEW_DOCKER_IMAGE }” \ > task-def.json
 	 	aws ecs register-task-definition --family myapp-test4 --region=us-east-1 --cli-input-json file://task-def.json
 		'''
          }
