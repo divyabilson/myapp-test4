@@ -84,16 +84,10 @@ pipeline {
 		aws ecs update-service --cluster $CLUSTERNAME --service $SERVICENAME --task-definition ${TASKFAMILY}:${NEW_REVISION_DATA} --force-new-deployment
 
    		echo "Cleaning the Images"
-                docker rmi -f $NEW_IMAGE
-                docker rmi -f "696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:!${BUILD_NUMBER}" 
+                docker image prune -a
 		'''
-         }
+	    }
 	}
-        
-                
-                
-
-        
     }
     post {
         always {
