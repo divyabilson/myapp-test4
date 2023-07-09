@@ -8,7 +8,7 @@ pipeline {
         imageName = "divyabilson/nodejsapp2-repo:${BUILD_NUMBER}"
         containerName = "nodetest2"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        GITHUB_URL = "https://github.com/divyabilson/myapp"
+        GITHUB_URL = "https://github.com/divyabilson/myapp-test4"
         APP_SERVER_IP = "54.227.89.75"
         USERNAME = "ubuntu"
         AWS_KEY_ID = "web_server_1"
@@ -66,27 +66,7 @@ pipeline {
             }
             
         }
-        stage('Deploy to ECS') {
-            steps {
-                script {
-                def NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"        
-                sh """
-                set -e
-	        echo "Creating new TD with the new Image"
-            export AWS_PROFILE=iamuser
-	        OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
-	        NEW_TASK_DEFINTIION=\$(echo \$OLD_TASK_DEFINITION | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')           
-	        NEW_TASK_INFO=\$(aws ecs register-task-definition --region ${REGION} --cli-input-json "\$NEW_TASK_DEFINTIION")
-                NEW_REVISION=\$(echo \$NEW_TASK_INFO | jq '.taskDefinition.revision')
-                echo "Updating the service with new TD"
-                aws ecs update-service --cluster ${env.CLUSTERNAME} --service ${env.SERVICENAME} --task-definition ${env.TASKFAMILY}:\$NEW_REVISION --region ${REGION}
-	        echo "Cleaning the Images"
-                docker rmi -f $NEW_DOCKER_IMAGE
-                docker rmi -f "${APPS}/${GIT_BRANCH}:${BUILD_NUMBER}"               	    	    
-                """
-            }
-         }
-	}
+        
                 
                 
 
