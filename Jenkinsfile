@@ -85,6 +85,8 @@ pipeline {
 
    		echo "Cleaning the Images"
                 docker image prune -a
+		echo "done"
+		echo "${TASKFAMILY}, Revision: ${NEW_REVISION_DATA}"
 		'''
 	    }
 	}
