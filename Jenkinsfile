@@ -1,4 +1,3 @@
-
 pipeline {
     agent {
         label 'EC2Slave-docker'
@@ -9,10 +8,16 @@ pipeline {
         imageName = "divyabilson/nodejsapp2-repo:${BUILD_NUMBER}"
         containerName = "nodetest2"
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        GITHUB_URL = "https://github.com/divyabilson/app2"
+        GITHUB_URL = "https://github.com/divyabilson/myapp"
         APP_SERVER_IP = "54.227.89.75"
         USERNAME = "ubuntu"
         AWS_KEY_ID = "web_server_1"
+      
+      REGION = 'us-east-1'
+      REPOSITORY = 'myapp-nodejs1'
+      ECR_REGISTRY = '696083720229.dkr.ecr.us-east-1.amazonaws.com'
+      
+      
         
     }
 
@@ -40,40 +45,50 @@ pipeline {
                 sh 'git clone $GITHUB_URL'
                 sh 'docker system prune -af'
                 sh 'docker build -t $imageName .'
-                sh 'docker stop $containerName || true && docker rm -f $containerName || true'
-                sh 'docker run -p 3000:3000 -d --name $containerName $imageName'
-                
-            }
-            
-        }
-        stage('Push Image to dockerhub') {
-            steps {
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'docker image push $imageName'
-                
-            }
-            
-        }
-        stage('Deploy to AWS EC2') {
-            steps {
-                // Connect to the AWS EC2 instance using SSH
-                withCredentials([sshUserPrivateKey(credentialsId: 'web_server_1', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    sh '''
-                    chmod 400 $SSH_KEY_PATH
-                    docker save -o image${BUILD_NUMBER}.tar $imageName
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $USERNAME@$APP_SERVER_IP 'rm -rf image*.tar'
-                    scp -o StrictHostKeyChecking=no -i $SSH_KEY_PATH -r image${BUILD_NUMBER}.tar $USERNAME@$APP_SERVER_IP:~
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $USERNAME@$APP_SERVER_IP 'docker rm -f nodejsapp2'
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $USERNAME@$APP_SERVER_IP 'docker rmi -f $(docker images -q) 2> /dev/null'
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $USERNAME@$APP_SERVER_IP 'sudo docker load -i image*.tar'
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $USERNAME@$APP_SERVER_IP 'docker run -p 80:3000 -d --restart unless-stopped --name nodejsapp2 $(docker images -qa)'
-                    ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH $USERNAME@$APP_SERVER_IP 'rm -rf image*.tar'
-                    '''
+              
                 }
+            
+        }
+        stage('Push Image to ECR') {
+            steps {
+              script {
+                   sh '''
+                      echo "Logging into ECR and Pushing the Image"
+                      export AWS_PROFILE=iamuser
+                      aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 696083720229.dkr.ecr.us-east-1.amazonaws.com
+                      docker tag "${imageName}" ${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}
+                      #eval "\$(aws ecr get-login --no-include-email --region ${REGION})"
+                      docker push "${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
+                    '''
+               }
+               
                 
             }
             
         }
+        stage('Deploy to ECS') {
+            steps {
+                script {
+                def NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"        
+                sh """
+                set -e
+	        echo "Creating new TD with the new Image"
+            export AWS_PROFILE=iamuser
+	        OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
+	        NEW_TASK_DEFINTIION=\$(echo \$OLD_TASK_DEFINITION | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')           
+	        NEW_TASK_INFO=\$(aws ecs register-task-definition --region ${REGION} --cli-input-json "\$NEW_TASK_DEFINTIION")
+                NEW_REVISION=\$(echo \$NEW_TASK_INFO | jq '.taskDefinition.revision')
+                echo "Updating the service with new TD"
+                aws ecs update-service --cluster ${env.CLUSTERNAME} --service ${env.SERVICENAME} --task-definition ${env.TASKFAMILY}:\$NEW_REVISION --region ${REGION}
+	        echo "Cleaning the Images"
+                docker rmi -f $NEW_DOCKER_IMAGE
+                docker rmi -f "${APPS}/${GIT_BRANCH}:${BUILD_NUMBER}"               	    	    
+                """
+            }
+         }
+                
+                
+
         
     }
     post {
