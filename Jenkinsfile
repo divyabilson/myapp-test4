@@ -17,6 +17,9 @@ pipeline {
       REPOSITORY = "myapp-nodejs1"
       ECR_REGISTRY = "696083720229.dkr.ecr.us-east-1.amazonaws.com"
       NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
+	SERVICENAME = "myapp-test4"
+    	TASKFAMILY = "myapp-test4"
+    	CLUSTERNAME = "myapp-test4"
       
       
         
