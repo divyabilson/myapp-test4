@@ -75,12 +75,12 @@ pipeline {
 		sh '''
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
-	        OLD_TASK_DEFINITION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION}"
-	        NEW_TASK_DEFINTIION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)')           
-	        NEW_TASK_INFO=\$(aws ecs register-task-definition --region ${REGION} --cli-input-json "\$NEW_TASK_DEFINTIION""
-                NEW_REVISION=\$(echo \$NEW_TASK_INFO | jq '.taskDefinition.revision')
+	        aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} > task_definition
+	        aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} | jq --arg IMAGE ${NEW_DOCKER_IMAGE} '.taskDefinition | .containerDefinitions[0].image = \$IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities)') >> new_task          
+	        aws ecs register-task-definition --region ${REGION} --cli-input-json new_task
+                NEW_REVISION=aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION} | jq '.taskDefinition.revision')
                 echo "Updating the service with new TD"
-                aws ecs update-service --cluster ${env.CLUSTERNAME} --service ${env.SERVICENAME} --task-definition ${env.TASKFAMILY}:\$NEW_REVISION --region ${REGION}
+                aws ecs update-service --cluster ${CLUSTERNAME} --service ${SERVICENAME} --task-definition ${TASKFAMILY}:\$NEW_REVISION --region ${REGION}
 	        echo "Cleaning the Images"
                 docker rmi -f $NEW_DOCKER_IMAGE
                 docker rmi -f "${APPS}/${GIT_BRANCH}:${BUILD_NUMBER}"               	    	    
