@@ -69,11 +69,9 @@ pipeline {
         }
         stage('Deploy to ECS') {
             steps {
-                script {
-		sh '$NEW_DOCKER_IMAGE'
-                sh """
-                
-	        echo "Creating new TD with the new Image"
+		sh '''
+  		$NEW_DOCKER_IMAGE
+                echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
 	     	$OLD_TASK_DEFINITION
@@ -85,8 +83,7 @@ pipeline {
 	        echo "Cleaning the Images"
                 docker rmi -f $NEW_DOCKER_IMAGE
                 docker rmi -f "${APPS}/${GIT_BRANCH}:${BUILD_NUMBER}"               	    	    
-                """
-            }
+                '''
          }
 	}
         
