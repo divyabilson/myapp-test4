@@ -81,6 +81,7 @@ pipeline {
   		NEW_REVISION_DATA=$"echo $NEW_REVISION | jq '.taskDefinition.revision'"
     		NEW_SERVICE=$"aws ecs update-service --cluster $CLUSTERNAME --service $SERVICENAME --task-definition $TASKFAMILY --force-new-deployment"	
       		echo "done"
+		echo "${TASKFAMILY}, Revision: ${NEW_REVISION_DATA}"
 		'''
          }
 	}
