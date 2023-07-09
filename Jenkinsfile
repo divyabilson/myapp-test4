@@ -70,7 +70,6 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
 		sh '''
-  		$NEW_DOCKER_IMAGE
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        OLD_TASK_DEFINITION=\$(aws ecs describe-task-definition --task-definition ${env.TASKFAMILY} --region ${REGION})
