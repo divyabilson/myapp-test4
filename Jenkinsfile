@@ -73,6 +73,8 @@ pipeline {
         stage('Deploy to ECS') {
             steps {
 		sh '''
+  		NEW_DOCKER_IMAGE="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"="${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
+    		$NEW_DOCKER_IMAGE
                 echo "Creating new TD with the new Image"
                 export AWS_PROFILE=iamuser
 	        TASK_DEFINITION="aws ecs describe-task-definition --task-definition ${TASKFAMILY} --region ${REGION}"
