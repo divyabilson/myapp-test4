@@ -5,14 +5,14 @@ pipeline {
     }
     
     environment {
-        imageName = "696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:${BUILD_NUMBER}"
+        imageName = "696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-stage:${BUILD_NUMBER}"
 	containerName = "nodejsapp"
         GITHUB_URL = "https://github.com/divyabilson/myapp-test4"
 	    
 	REGION = "us-east-1"
-      	REPOSITORY = "myapp-nodejs1"
+      	REPOSITORY = "myapp-stage"
       	ECR_REGISTRY = "696083720229.dkr.ecr.us-east-1.amazonaws.com"
-      	NEW_DOCKER_IMAGE="696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-nodejs1:${BUILD_NUMBER}"
+      	NEW_DOCKER_IMAGE="696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-stage:${BUILD_NUMBER}"
 	SERVICENAME = "myapp-stage"
     	TASKFAMILY = "myapp-stage"
     	CLUSTERNAME = "myapp-stage"
