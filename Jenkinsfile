@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'EC2Slave-docker'
+        label 'ecs-cloud'
         
     }
     
