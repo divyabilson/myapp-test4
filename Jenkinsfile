@@ -14,7 +14,7 @@ pipeline {
       	ECR_REGISTRY = "696083720229.dkr.ecr.us-east-1.amazonaws.com"
       	NEW_DOCKER_IMAGE="696083720229.dkr.ecr.us-east-1.amazonaws.com/myapp-stage:${BUILD_NUMBER}"
 	SERVICENAME = "myapp-stage"
-    	TASKFAMILY = "myapp-stage"
+    	TASKFAMILY = "myapp-stage1"
     	CLUSTERNAME = "myapp-stage"
     }
 	tools {
