@@ -47,7 +47,7 @@ pipeline {
 					sh '''
      						echo "Logging into ECR and Pushing the Image"
                       				export AWS_PROFILE=iamuser
-                      				aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 696083720229.dkr.ecr.us-east-1.amazonaws.com
+                      				aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 696083720229.dkr.ecr.us-east-1.amazonaws.com
                       				sudo docker tag "${imageName}" ${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}
                       				sudo docker push "${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
 					'''
