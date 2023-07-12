@@ -34,10 +34,10 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh 'git clone $GITHUB_URL'
-				sh 'docker system prune -af'
-				sh 'docker build -t $imageName .'
-				sh 'docker stop $containerName || true && docker rm -f $containerName || true'
-                		sh 'docker run -p 80:3000 -d --name $containerName $imageName'
+				sh 'sudo docker system prune -af'
+				sh 'sudo docker build -t $imageName .'
+				sh 'sudo docker stop $containerName || true && docker rm -f $containerName || true'
+                		sh 'sudo docker run -p 80:3000 -d --name $containerName $imageName'
 				sh 'sudo apt install -y jq && jq --version' 
 			}
 		}
@@ -48,8 +48,8 @@ pipeline {
      						echo "Logging into ECR and Pushing the Image"
                       				export AWS_PROFILE=iamuser
                       				aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 696083720229.dkr.ecr.us-east-1.amazonaws.com
-                      				docker tag "${imageName}" ${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}
-                      				docker push "${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
+                      				sudo docker tag "${imageName}" ${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}
+                      				sudo docker push "${ECR_REGISTRY}/${REPOSITORY}:${BUILD_NUMBER}"
 					'''
 				}
 			}
@@ -68,7 +68,7 @@ pipeline {
 					aws ecs update-service --cluster $CLUSTERNAME --service $SERVICENAME --task-definition ${TASKFAMILY}:${NEW_REVISION_DATA} --force-new-deployment
 
    					echo "Cleaning the Images"
-                			docker image prune -a
+                			sudo docker image prune -a
 					echo "done"
 					echo "${TASKFAMILY}, Revision: ${NEW_REVISION_DATA}"
 				'''
