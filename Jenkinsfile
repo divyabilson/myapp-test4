@@ -19,6 +19,7 @@ pipeline {
     }
 	tools {
 		nodejs 'nodejs'
+		docker 'docker'
 	}
 	stages {
 		stage('Cleanup') {
