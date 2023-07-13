@@ -34,7 +34,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh 'git clone $GITHUB_URL'
-				sh 'vode -v'
+				sh 'node -v'
 				sh 'docker system prune -af'
 				sh 'docker build -t $imageName .'
 				sh 'docker stop $containerName || true && docker rm -f $containerName || true'
