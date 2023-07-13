@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'ecs-cloud2'
+        label 'ecsagent'
         
     }
     
