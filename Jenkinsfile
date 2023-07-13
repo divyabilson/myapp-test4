@@ -34,11 +34,11 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh 'git clone $GITHUB_URL'
-				sh 'sudo docker system prune -af'
-				sh 'sudo docker build -t $imageName .'
-				sh 'sudo docker stop $containerName || true && docker rm -f $containerName || true'
-                		sh 'sudo docker run -p 80:3000 -d --name $containerName $imageName'
-				sh 'sudo apt install -y jq && jq --version' 
+				sh 'docker system prune -af'
+				sh 'docker build -t $imageName .'
+				sh 'docker stop $containerName || true && docker rm -f $containerName || true'
+                		sh 'docker run -p 80:3000 -d --name $containerName $imageName'
+				sh 'apt install -y jq && jq --version' 
 			}
 		}
 		stage('Push Image to ECR') {
