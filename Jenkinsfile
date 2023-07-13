@@ -34,6 +34,7 @@ pipeline {
 		stage('Build') {
 			steps {
 				sh 'git clone $GITHUB_URL'
+				sh 'sudo usermod -aG docker ubuntu'
 				sh 'node -v'
 				sh 'docker system prune -af'
 				sh 'docker build -t $imageName .'
